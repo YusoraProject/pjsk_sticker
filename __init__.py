@@ -127,7 +127,7 @@ async def chain_reply(bot, ev, chain, msg):
     data = {
         "type": "node",
         "data": {
-            "name": str(NICKNAME[0]),  # 发送者显示名字
+            "name": str(NICKNAME[1]),  # 发送者显示名字
             "user_id": str(ev.self_id),  # 发送者QQ号
             "content": str(msg)  # 具体消息
         }
