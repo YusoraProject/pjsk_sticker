@@ -8,7 +8,7 @@ from hoshino.util import filt_message
 from io import BytesIO
 from .chara import check_chara, all_chara, check_name
 from .pic import stick_maker
-import os
+import os,json
 
 PLUGIN_PATH = os.path.dirname(__file__)
 config_path = os.path.join(PLUGIN_PATH, "config.json")
@@ -192,3 +192,43 @@ async def make_stick(bot: HoshinoBot, ev: CQEvent):
     except Exception as e:
         logger.error(e)
         await bot.send(ev, "图片生成失败", at_sender=True)
+
+
+@sv.on_fullmatch('pss全列表')
+async def sitcker_list(bot, ev: CQEvent):
+    with open(join(PLUGIN_PATH, 'charaname.json'), 'r', encoding='UTF-8') as f:
+        charaname = json.load(f)
+    name = []
+    for i in charaname:
+        name.append(i[0])
+    # logger.info(name)
+    chain = []
+    # filepath = os.path.join(PLUGIN_PATH, f'img\\info\\{name}.png')
+
+    filepath = os.path.join(PLUGIN_PATH, f'img\\info\\')
+    # msg = f'[CQ:image,file=file:///{os.path.abspath(filepath)}\\{name[1]}.png]'
+
+    for i in range(0,len(name)):
+        message = f'[CQ:image,file=file:///{os.path.abspath(filepath)}\\{name[i]}.png]'
+        chain = await chain_reply(bot, ev, chain, message)
+    # message_1 = f'{msg}'  # 消息1
+    # chain = await chain_reply(bot, ev, chain, message_1)  # 消息1加入转发消息节点中
+
+    await bot.send_group_forward_msg(group_id=ev['group_id'], messages=chain)  # 合并转发消息，group_id为伪造消息来源的群聊号
+
+
+if type(NICKNAME) == str:
+    NICKNAME = [NICKNAME]
+
+
+async def chain_reply(bot, ev, chain, msg):
+    data = {
+        "type": "node",
+        "data": {
+            "name": str(NICKNAME[1]),  # 发送者显示名字
+            "user_id": str(ev.self_id),  # 发送者QQ号
+            "content": str(msg)  # 具体消息
+        }
+    }
+    chain.append(data)
+    return chain
